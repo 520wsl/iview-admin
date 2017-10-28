@@ -1,26 +1,26 @@
-import Vue from 'vue';
-import iView from 'iview';
-import VueRouter from 'vue-router';
-import {routers, otherRouter, appRouter} from './router';
-import Vuex from 'vuex';
-import Util from './libs/util';
-import App from './app.vue';
-import Cookies from 'js-cookie';
-import 'iview/dist/styles/iview.css';
+import Vue from 'vue';/** 导入vue */
+import iView from 'iview';/** 导入iview */
+import VueRouter from 'vue-router';/** 导入vue-router */
+import {routers, otherRouter, appRouter} from './router';/** 导入路由配置文件 */
+import Vuex from 'vuex';/** 导入vuex */
+import Util from './libs/util';/** 工具类 */
+import App from './app.vue';/** App.vue组件  */
+import Cookies from 'js-cookie';/** 导入js-Cookies */
+import 'iview/dist/styles/iview.css';/** 导入 iview样式  */
 
-import VueI18n from 'vue-i18n';
-import Locales from './locale';
-import zhLocale from 'iview/src/locale/lang/zh-CN';
-import enLocale from 'iview/src/locale/lang/en-US';
-import zhTLocale from 'iview/src/locale/lang/zh-TW';
+import VueI18n from 'vue-i18n';/** 导入VueI18n */
+import Locales from './locale';/** 国际化 多语言配置 */
+import zhLocale from 'iview/src/locale/lang/zh-CN';/** 导入语言包 中文简体 */
+import enLocale from 'iview/src/locale/lang/en-US';/** 导入语言包 英文 */
+import zhTLocale from 'iview/src/locale/lang/zh-TW';/** 导入语言包 中文繁体 */
 
-Vue.use(VueRouter);
-Vue.use(Vuex);
-Vue.use(VueI18n);
-Vue.use(iView);
+Vue.use(VueRouter);/** 注册 VueRouter */
+Vue.use(Vuex);/** 注册 Vuex */
+Vue.use(VueI18n);/** 注册 VueI18n */
+Vue.use(iView);/** 注册iView */
 
 // 自动设置语言
-const navLang = navigator.language;
+const navLang = navigator.language;/**  返回浏览器应用程序的语言代码。 但是不是所有浏览器都能返回，有坑下次再看*/
 const localLang = (navLang === 'zh-CN' || navLang === 'en-US') ? navLang : false;
 const lang = window.localStorage.lang || localLang || 'zh-CN';
 

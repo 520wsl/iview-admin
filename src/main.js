@@ -20,18 +20,18 @@ Vue.use(VueI18n);/** 注册 VueI18n */
 Vue.use(iView);/** 注册iView */
 
 // 自动设置语言
-const navLang = navigator.language;/**  返回浏览器应用程序的语言代码。 但是不是所有浏览器都能返回，有坑下次再看*/
-const localLang = (navLang === 'zh-CN' || navLang === 'en-US') ? navLang : false;
-const lang = window.localStorage.lang || localLang || 'zh-CN';
+const navLang = navigator.language;/**  返回浏览器应用程序的语言代码。 但是不是所有浏览器都能返回，有坑下次再看 */
+const localLang = (navLang === 'zh-CN' || navLang === 'en-US') ? navLang : false;/** 判断浏览器语言是 zh-CN 或者 en-US，如果都不是返回 false； const localLang: false | "zh-CN" | "en-US" */
+const lang = window.localStorage.lang || localLang || 'zh-CN';/** 从浏览器获取 localStorage 中 lang ，如果没有就使用 localLang 的 值 或者 默认值 */
 
-Vue.config.lang = lang;
+Vue.config.lang = lang; /** 将lang 语言配置到vue的配置中 */
 
 // 多语言配置
-const locales = Locales;
-const mergeZH = Object.assign(zhLocale, locales['zh-CN']);
+const locales = Locales;/** 国际化 多语言配置 */
+const mergeZH = Object.assign(zhLocale, locales['zh-CN']); /** Object.assign() 方法用于将所有可枚举属性的值从一个或多个源对象复制到目标对象。它将返回目标对象。这里是合并对象 参考网站：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/assign */
 const mergeEN = Object.assign(enLocale, locales['en-US']);
 const mergeTW = Object.assign(zhTLocale, locales['zh-TW']);
-Vue.locale('zh-CN', mergeZH);
+Vue.locale('zh-CN', mergeZH);/** 通过 locale 将 语言包注册到vue中去，这块没有找到资料，一脸懵逼。。。 */
 Vue.locale('en-US', mergeEN);
 Vue.locale('zh-TW', mergeTW);
 
@@ -41,10 +41,35 @@ const RouterConfig = {
     routes: routers
 };
 
-const router = new VueRouter(RouterConfig);
+const router = new VueRouter(RouterConfig);/** 实例化一个vue router */
+/**
+全局钩子
 
+const router = new VueRouter({ ... })
 router.beforeEach((to, from, next) => {
-    iView.LoadingBar.start();
+    // do something 
+    next();
+});
+
+router.afterEach((to, from, next) => {
+    console.log(to.path);
+});
+
+
+每个钩子方法接收三个参数：
+to: Route : 即将要进入的目标 [路由对象]
+from: Route : 当前导航正要离开的路由
+next: Function : 一定要调用该方法来 resolve 这个钩子。执行效果依赖 next
+方法的调用参数。
+next(): 进行管道中的下一个钩子。如果全部钩子执行完了，则导航的状态就是confirmed （确认的）。
+next(false): 中断当前的导航。如果浏览器的 URL 改变了（可能是用户手动或者浏览器后退按钮），那么 URL 地址会重置到 from
+路由对应的地址。
+next('/') 或者 next({ path: '/' }): 跳转到一个不同的地址。当前的导航被中断，然后进行一个新的导航。
+
+确保要调用 next方法，否则钩子就不会被 resolved。
+ */
+router.beforeEach((to, from, next) => { /** router.beforeEach 在路由切换开始时调用 */
+    iView.LoadingBar.start();/** LoadingBar 只会在全局创建一个，因此在任何位置调用的方法都会控制这同一个组件。主要使用场景是路由切换和Ajax，因为这两者都不能拿到精确的进度，LoadingBar 会模拟进度，当然也可以通过update()方法来传入一个精确的进度，比如在文件上传时会很有用，具体见API。 */
     Util.title(to.meta.title);
     if (Cookies.get('locking') === '1' && to.name !== 'locking') {  // 判断当前是否是锁定状态
         next(false);

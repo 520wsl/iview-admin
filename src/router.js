@@ -43,6 +43,7 @@ export const preview = {
     component: resolve => { require(['./views/form/article-publish/preview.vue'], resolve); }
 };
 
+/** 锁屏界面 */
 export const locking = {
     path: '/locking',
     name: 'locking',
@@ -69,10 +70,10 @@ export const appRouter = [
         path: '/access',
         icon: 'key',
         name: 'access',
-        title: '权限管理',
+        title: '权限管理',/** 用于左侧菜单使用 */
         component: Main,
         children: [
-            { path: 'index', title: '权限管理', name: 'access_index', component: resolve => { require(['./views/access/access.vue'], resolve); } }
+            { path: 'index', title: '权限管理'/** 用于面包屑，标签页 */, name: 'access_index', component: resolve => { require(['./views/access/access.vue'], resolve); } }
         ]
     },
     {

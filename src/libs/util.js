@@ -1,9 +1,13 @@
 import axios from 'axios';
 import env from '../config/env';
-
+/**
+ * 工具类提供一些便捷地工具服务
+ * 1、修改网站titie
+ */
 let util = {
 
 };
+/** 修改网站title */
 util.title = function (title) {
     title = title || 'iView admin';
     window.document.title = title;

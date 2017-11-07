@@ -34,6 +34,10 @@ util.inOf = function (arr, targetArr) {
     return res;
 };
 
+/**
+ * 判断 ele 是否存在 与 targetArr
+ * 返回 存在 还是 不存在
+ */
 util.oneOf = function (ele, targetArr) {
     if (targetArr.indexOf(ele) >= 0) {
         return true;
@@ -50,17 +54,26 @@ util.showThisRoute = function (itAccess, currentAccess) {
     }
 };
 
+/**
+ * 2017年11月4日15:38:46
+ * Mad Dragon
+ * routers: 路由集合
+ * name：路由名称
+ *
+ * 作用：
+ *  在路由列表中匹配 to.name 的路由，并且返回匹配到的路由对象
+ */
 util.getRouterObjByName = function (routers, name) {
-    let routerObj = {};
-    routers.forEach(item => {
-        if (item.name === 'otherRouter') {
-            item.children.forEach((child, i) => {
-                if (child.name === name) {
-                    routerObj = item.children[i];
+    let routerObj = {};// 定义初始化对象
+    routers.forEach(item => { // 遍历 routers 路由集合
+        if (item.name === 'otherRouter') { // 如果 是 otherRouter 路由集合 otherRouter：作为Main组件的子页面展示但是不在左侧菜单显示的路由写在otherRouter里
+            item.children.forEach((child, i) => { // 遍历子路由
+                if (child.name === name) { // if 子路由 和 路 由名 相同
+                    routerObj = item.children[i]; // 将对对应子路由信息，写入到 routerObj 对象中
                 }
             });
         } else {
-            if (item.children.length === 1) {
+            if (item.children.length === 1) { // if item.children 的 长途 全等于 1
                 if (item.children[0].name === name) {
                     routerObj = item.children[0];
                 }
@@ -232,6 +245,10 @@ util.openNewPage = function (vm, name, argu, query) {
     vm.$store.commit('setCurrentPageName', name);
 };
 
+/**
+ * 去默认页面
+ *  如果在地址栏输入的是一级菜单则默认打开其第一个二级菜单的页面
+ */
 util.toDefaultPage = function (routers, name, route, next) {
     let len = routers.length;
     let i = 0;

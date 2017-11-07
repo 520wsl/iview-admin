@@ -1,7 +1,7 @@
 import Vue from 'vue';/** 导入vue */
 import iView from 'iview';/** 导入iview */
 import VueRouter from 'vue-router';/** 导入vue-router */
-import {routers, otherRouter, appRouter} from './router';/** 导入路由配置文件 */
+import { routers, otherRouter, appRouter } from './router';/** 导入路由配置文件 */
 import Vuex from 'vuex';/** 导入vuex */
 import Util from './libs/util';/** 工具类 */
 import App from './app.vue';/** App.vue组件  */
@@ -44,6 +44,7 @@ const RouterConfig = {
 const router = new VueRouter(RouterConfig);/** 实例化一个vue router */
 /**
 全局钩子
+导航守卫
 
 const router = new VueRouter({ ... })
 router.beforeEach((to, from, next) => {
@@ -68,20 +69,20 @@ next('/') 或者 next({ path: '/' }): 跳转到一个不同的地址。当前的
 确保要调用 next方法，否则钩子就不会被 resolved。
  */
 router.beforeEach((to, from, next) => { /** router.beforeEach 在路由切换开始时调用 */
-    iView.LoadingBar.start();/** LoadingBar 只会在全局创建一个，因此在任何位置调用的方法都会控制这同一个组件。主要使用场景是路由切换和Ajax，因为这两者都不能拿到精确的进度，LoadingBar 会模拟进度，当然也可以通过update()方法来传入一个精确的进度，比如在文件上传时会很有用，具体见API。 */
+    iView.LoadingBar.start();/** LoadingBar 加载进度条 iView.LoadingBar.start(); 开始从 0 显示进度条，并自动加载进度; LoadingBar 只会在全局创建一个，因此在任何位置调用的方法都会控制这同一个组件。主要使用场景是路由切换和Ajax，因为这两者都不能拿到精确的进度，LoadingBar 会模拟进度，当然也可以通过update()方法来传入一个精确的进度，比如在文件上传时会很有用，具体见API。 */
     Util.title(to.meta.title);/** 使用工具类，修改网站titie */
     /**
      * 判断当前是否是锁屏状态  locking : 0:未锁屏 1：锁屏状态
      * 并且前往的页面是锁屏地页面
      */
     if (Cookies.get('locking') === '1' && to.name !== 'locking') {  // 判断当前是否是锁定状态
-        next(false);/** next(false): 中断当前的导航。如果浏览器的 URL 改变了（可能是用户手动或者浏览器后退按钮），那么 URL 地址会重置到 from 路由对应的地址。*/
+        next(false);/** next(false): 中断当前的导航。如果浏览器的 URL 改变了（可能是用户手动或者浏览器后退按钮），那么 URL 地址会重置到 from 路由对应的地址。 */
         /** 不留历史记录调到 锁屏界面 */
         router.replace({
             name: 'locking'
         });
-    } else if (Cookies.get('locking') === '0' && to.name === 'locking') {
-        next(false);
+    } else if (Cookies.get('locking') === '0' && to.name === 'locking') { /** 如果现在是 未锁屏 装态 并且 要去的界面是 锁屏路由 */
+        next(false);/** 中断当前的导航，返回到原来的界面 */
     } else {
         if (!Cookies.get('user') && to.name !== 'login') {  // 判断是否已经登录且前往的页面不是登录页
             next({
@@ -93,8 +94,14 @@ router.beforeEach((to, from, next) => { /** router.beforeEach 在路由切换开
                 name: 'home_index'
             });
         } else {
+            /**
+             * otherRouter：作为Main组件的子页面展示但是不在左侧菜单显示的路由写在otherRouter里
+             * appRouter： 作为Main组件的子页面展示并且在左侧菜单显示的路由写在appRouter里
+             * getRouterObjByName：在路由列表中匹配 to.name 的路由，并且返回匹配到的路由对象
+             * access： 权限
+             */
             if (Util.getRouterObjByName([otherRouter, ...appRouter], to.name).access !== undefined) {  // 判断用户是否有权限访问当前页
-                if (Util.getRouterObjByName([otherRouter, ...appRouter], to.name).access === parseInt(Cookies.get('access'))) {
+                if (Util.getRouterObjByName([otherRouter, ...appRouter], to.name).access === parseInt(Cookies.get('access'))) { // if 权限 和 cookie 中的相同
                     Util.toDefaultPage([otherRouter, ...appRouter], to.name, router, next);  // 如果在地址栏输入的是一级菜单则默认打开其第一个二级菜单的页面
                 } else {
                     router.replace({
@@ -107,28 +114,45 @@ router.beforeEach((to, from, next) => { /** router.beforeEach 在路由切换开
             }
         }
     }
-    iView.LoadingBar.finish();
+    iView.LoadingBar.finish();/** LoadingBar 加载进度条 iView.LoadingBar.finish(); 结束进度条，自动补全剩余进度 */
 });
 
+/**
+ * 全局后置钩子
+ * 你也可以注册全局后置钩子，然而和守卫不同的是，这些钩子不会接受 next 函数也不会改变导航本身：
+ * 路由执行完后
+ *  1、 结束进度条
+ *  2、页面返回顶部
+ *
+ */
 router.afterEach(() => {
-    iView.LoadingBar.finish();
-    window.scrollTo(0, 0);
+    iView.LoadingBar.finish();/** LoadingBar 加载进度条 iView.LoadingBar.finish(); 结束进度条，自动补全剩余进度 */
+    window.scrollTo(0, 0);/** scrollTo() 方法可把内容滚动到指定的坐标。 */
 });
+
 // 状态管理
 const store = new Vuex.Store({
     state: {
+        /**
+         * 路由数据
+         * otherRouter：作为Main组件的子页面展示但是不在左侧菜单显示的路由写在otherRouter里
+         * appRouter： 作为Main组件的子页面展示并且在左侧菜单显示的路由写在appRouter里
+         */
         routers: [
             otherRouter,
             ...appRouter
         ],
         menuList: [],
-        tagsList: [...otherRouter.children],
+        tagsList: [...otherRouter.children], /**  作为Main组件的子页面展示但是不在左侧菜单显示的路由 */
+        /** tags 上的表现数据，会存在 local storage */
         pageOpenedList: [{
             title: '首页',
             path: '',
             name: 'home_index'
         }],
+        /** tags 上 当前选中的标签 */
         currentPageName: '',
+        /** tags 上 当前选中的地址 */
         currentPath: [
             {
                 title: '首页',
@@ -139,7 +163,7 @@ const store = new Vuex.Store({
         openedSubmenuArr: [],  // 要展开的菜单数组
         menuTheme: '', // 主题
         theme: '',
-        cachePage: [],
+        cachePage: [],/** 缓存页面 name 列表 */
         lang: '',
         isFullScreen: false,
         dontCache: ['text-editor']  // 在这里定义你不想要缓存的页面的name属性值(参见路由配置router.js)
@@ -148,20 +172,31 @@ const store = new Vuex.Store({
 
     },
     mutations: {
+        /**
+         *
+         *设置 不在左侧菜单显示的路由
+         * @param { '状态' } state
+         * @param { '作为Main组件的子页面展示但是不在左侧菜单显示的路由' } list
+         */
         setTagsList (state, list) {
             state.tagsList.push(...list);
         },
+        /**
+         * 将 关闭的 页面 从  state.cachePage 中删除
+         * @param {*} state
+         * @param {*} name
+         */
         closePage (state, name) {
-            state.cachePage.forEach((item, index) => {
+            state.cachePage.forEach((item, index) => { /** forEach() 方法用于调用数组的每个元素，并将元素传递给回调函数。 */
                 if (item === name) {
-                    state.cachePage.splice(index, 1);
+                    state.cachePage.splice(index, 1);/** splice() 方法向/从数组中添加/删除项目，然后返回被删除的项目。 index 规定添加/删除项目的位置， 1 删除的长度 */
                 }
             });
         },
         increateTag (state, tagObj) {
-            if (!Util.oneOf(tagObj.name, state.dontCache)) {
-                state.cachePage.push(tagObj.name);
-                localStorage.cachePage = JSON.stringify(state.cachePage);
+            if (!Util.oneOf(tagObj.name, state.dontCache)) {/** tagObj 对象 是否 存在于 dontCache（不缓存的列表） */
+                state.cachePage.push(tagObj.name);/** 追加到   缓存页面 name 列表 */
+                localStorage.cachePage = JSON.stringify(state.cachePage);/** 将 state.cachePage 缓存到 localStorage.cachePage */
             }
             state.pageOpenedList.push(tagObj);
         },
@@ -170,6 +205,7 @@ const store = new Vuex.Store({
                 state.cachePage = JSON.parse(localStorage.cachePage);
             }
         },
+        /** 移除tag */
         removeTag (state, name) {
             state.pageOpenedList.map((item, index) => {
                 if (item.name === name) {
@@ -185,7 +221,7 @@ const store = new Vuex.Store({
             if (get.query) {
                 openedPage.query = get.query;
             }
-            state.pageOpenedList.splice(get.index, 1, openedPage);
+            state.pageOpenedList.splice(get.index, 1, openedPage);/** 删除 位于 get.index 的 元素，并用 opendPage 替换*/
             localStorage.pageOpenedList = JSON.stringify(state.pageOpenedList);
         },
         clearAllTags (state) {
@@ -253,9 +289,11 @@ const store = new Vuex.Store({
         unlock (state) {
             Cookies.set('locking', '0');
         },
+        /** 设置菜单列表 */
         setMenuList (state, menulist) {
             state.menuList = menulist;
         },
+        // 权限菜单过滤相关
         updateMenulist (state) {
             let accessCode = parseInt(Cookies.get('access'));
             let menuList = [];
@@ -312,8 +350,11 @@ const store = new Vuex.Store({
         handleFullScreen (state) {
             let main = document.body;
             if (state.isFullScreen) {
+                /**
+                 * 退出全屏
+                 */
                 if (document.exitFullscreen) {
-                    document.exitFullscreen();
+                    document.exitFullscreen();/** Document.exitFullscreen() 方法用于让当前文档退出全屏模式（原文表述不准确，详见备注）。 */
                 } else if (document.mozCancelFullScreen) {
                     document.mozCancelFullScreen();
                 } else if (document.webkitCancelFullScreen) {
@@ -322,6 +363,9 @@ const store = new Vuex.Store({
                     document.msExitFullscreen();
                 }
             } else {
+                /**
+                 * 进入全屏
+                 */
                 if (main.requestFullscreen) {
                     main.requestFullscreen();
                 } else if (main.mozRequestFullScreen) {
@@ -378,6 +422,6 @@ new Vue({
                 tagsList.push(...item.children);
             }
         });
-        this.$store.commit('setTagsList', tagsList);
+        this.$store.commit('setTagsList', tagsList);//设置 不在左侧菜单显示的路由
     }
 });

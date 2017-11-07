@@ -4,7 +4,7 @@ import Main from './views/Main.vue';
 export const loginRouter = {
     path: '/login',
     name: 'login',
-    meta: {
+    meta: {// meta 字段 路由元信息
         title: 'Login - 登录'
     },
     component: resolve => { require(['./views/login.vue'], resolve); }
@@ -70,7 +70,7 @@ export const appRouter = [
         path: '/access',
         icon: 'key',
         name: 'access',
-        title: '权限管理',/** 用于左侧菜单使用 */
+        title: '权限管理', /** 用于左侧菜单使用 */
         component: Main,
         children: [
             { path: 'index', title: '权限管理'/** 用于面包屑，标签页 */, name: 'access_index', component: resolve => { require(['./views/access/access.vue'], resolve); } }

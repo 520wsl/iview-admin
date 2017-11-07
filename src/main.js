@@ -193,6 +193,7 @@ const store = new Vuex.Store({
                 }
             });
         },
+        // 插入缓存标签
         increateTag (state, tagObj) {
             if (!Util.oneOf(tagObj.name, state.dontCache)) {/** tagObj 对象 是否 存在于 dontCache（不缓存的列表） */
                 state.cachePage.push(tagObj.name);/** 追加到   缓存页面 name 列表 */
@@ -200,6 +201,7 @@ const store = new Vuex.Store({
             }
             state.pageOpenedList.push(tagObj);
         },
+        // 插入缓存页面
         initCachepage (state) {
             if (localStorage.cachePage) {
                 state.cachePage = JSON.parse(localStorage.cachePage);
@@ -213,6 +215,7 @@ const store = new Vuex.Store({
                 }
             });
         },
+        // 页面打开列表
         pageOpenedList (state, get) {
             let openedPage = state.pageOpenedList[get.index];
             if (get.argu) {
@@ -224,6 +227,7 @@ const store = new Vuex.Store({
             state.pageOpenedList.splice(get.index, 1, openedPage);/** 删除 位于 get.index 的 元素，并用 opendPage 替换*/
             localStorage.pageOpenedList = JSON.stringify(state.pageOpenedList);
         },
+        // 关闭所有标签
         clearAllTags (state) {
             state.pageOpenedList.splice(1);
             router.push({
@@ -232,6 +236,7 @@ const store = new Vuex.Store({
             state.cachePage.length = 0;
             localStorage.pageOpenedList = JSON.stringify(state.pageOpenedList);
         },
+        // 关闭其他标签
         clearOtherTags (state, vm) {
             let currentName = vm.$route.name;
             let currentIndex = 0;
@@ -252,15 +257,19 @@ const store = new Vuex.Store({
             state.cachePage = newCachepage;
             localStorage.pageOpenedList = JSON.stringify(state.pageOpenedList);
         },
+        // 设置打开列表
         setOpenedList (state) {
             state.pageOpenedList = localStorage.pageOpenedList ? JSON.parse(localStorage.pageOpenedList) : [otherRouter.children[0]];
         },
+        // 设置缓存页面地址
         setCurrentPath (state, pathArr) {
             state.currentPath = pathArr;
         },
+        // 设置缓存页面名称
         setCurrentPageName (state, name) {
             state.currentPageName = name;
         },
+        // 添加打开地子菜单
         addOpenSubmenu (state, name) {
             let hasThisName = false;
             let isEmpty = false;
@@ -274,12 +283,15 @@ const store = new Vuex.Store({
                 state.openedSubmenuArr.push(name);
             }
         },
+        // 关闭打开的子菜单
         clearOpenedSubmenu (state) {
             state.openedSubmenuArr.length = 0;
         },
+        // 缓存菜单树
         changeMenuTheme (state, theme) {
             state.menuTheme = theme;
         },
+        // 缓存主题树
         changeMainTheme (state, mainTheme) {
             state.theme = mainTheme;
         },
@@ -422,6 +434,6 @@ new Vue({
                 tagsList.push(...item.children);
             }
         });
-        this.$store.commit('setTagsList', tagsList);//设置 不在左侧菜单显示的路由
+        this.$store.commit('setTagsList', tagsList);//设置 标签
     }
 });
